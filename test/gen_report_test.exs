@@ -19,4 +19,28 @@ defmodule GenReportTest do
       assert response == {:error, "Insira o nome de um arquivo"}
     end
   end
+
+  describe "build_from_many/1" do
+    test "When passing a list of files it should return a valid report" do
+      # Arrange
+      file_names = [@file_name]
+
+      # Act
+      response = GenReport.build_from_many(file_names)
+
+      # Assert
+      assert response == ReportFixture.build()
+    end
+
+    test "When passing a invalid param it should return an error" do
+      # Arrange
+      invalid_param = 1234
+
+      # Act
+      response = GenReport.build_from_many(invalid_param)
+
+      # Assert
+      assert response == {:error, "Insira uma lista de arquivos valida"}
+    end
+  end
 end

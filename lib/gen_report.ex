@@ -9,6 +9,42 @@ defmodule GenReport do
 
   def build, do: {:error, "Insira o nome de um arquivo"}
 
+  def build_from_many(file_names) when is_list(file_names) do
+    file_names
+    |> Task.async_stream(&build/1)
+    |> Enum.reduce(create_empty_report(), fn {:ok, result}, report ->
+      sum_reports(report, result)
+    end)
+  end
+
+  def build_from_many(_file_names), do: {:error, "Insira uma lista de arquivos valida"}
+
+  defp sum_reports(
+         %{
+           "all_hours" => all_hours_total,
+           "hours_per_month" => hours_per_month_total,
+           "hours_per_year" => hours_per_year_total
+         },
+         %{
+           "all_hours" => all_hours,
+           "hours_per_month" => hours_per_month,
+           "hours_per_year" => hours_per_year
+         }
+       ) do
+    all_hours_total = sum_maps(all_hours_total, all_hours)
+    hours_per_month_total = merge_maps(hours_per_month_total, hours_per_month)
+    hours_per_year_total = merge_maps(hours_per_year_total, hours_per_year)
+    build_report(all_hours_total, hours_per_month_total, hours_per_year_total)
+  end
+
+  defp sum_maps(map1, map2) do
+    Map.merge(map1, map2, fn _key, value1, value2 -> value1 + value2 end)
+  end
+
+  defp merge_maps(map1, map2) do
+    Map.merge(map1, map2, fn _key, value1, value2 -> sum_maps(value1, value2) end)
+  end
+
   defp calculate_values(
          [name, hours, _day, month, year],
          %{
