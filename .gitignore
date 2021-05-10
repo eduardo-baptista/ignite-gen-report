@@ -25,3 +25,6 @@ gen_report-*.tar
 
 # Temporary files for e.g. tests
 /tmp
+
+# mix lock file
+mix.lock
